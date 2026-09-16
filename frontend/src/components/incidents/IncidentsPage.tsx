@@ -1,5 +1,10 @@
+/**
+ * IncidentsPage — white + golden-yellow theme.
+ * Shows real persisted incidents only. No fake data.
+ * Demo incidents are clearly labelled.
+ */
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, CheckCircle, Clock, Video } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, Video, RefreshCw, AlertCircle } from 'lucide-react';
 import { Incident } from '../../types';
 import { getIncidents, acknowledgeIncident, resolveIncident } from '../../services/incidentService';
 import { getCameras } from '../../services/cameraService';
@@ -12,9 +17,11 @@ function formatTime(iso: string) {
   });
 }
 
+type Filter = 'ALL' | 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED';
+
 export function IncidentsPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED'>('ACTIVE');
+  const [filter, setFilter] = useState<Filter>('ACTIVE');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<number | null>(null);
   const [connectedCameras, setConnectedCameras] = useState(0);
@@ -57,50 +64,59 @@ export function IncidentsPage() {
     setBusy(null);
   };
 
+  const filterBtnStyle = (f: Filter) => f === filter
+    ? { background: 'rgba(234,179,8,0.12)', color: '#92400E', border: '1.5px solid #EAB308' }
+    : { background: 'transparent', color: '#6B7280', border: '1px solid #E5E7EB' };
+
   return (
-    <div className="p-6 flex flex-col gap-6 text-[#e6edf3]">
+    <div className="p-6 flex flex-col gap-6" style={{ background: '#F9FAFB', color: '#1F2937' }}>
+
       {/* Header */}
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="w-8 h-8 rounded-lg bg-orange-900/20 flex items-center justify-center">
-          <AlertTriangle size={18} className="text-orange-400" />
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+          style={{ background: 'rgba(217,119,6,0.08)', border: '1px solid rgba(217,119,6,0.2)' }}>
+          <AlertTriangle size={18} style={{ color: '#D97706' }} />
         </div>
         <div>
-          <h1 className="text-lg font-bold">Incidents</h1>
-          <p className="text-xs text-[#8b949e]">AI-detected security incidents</p>
+          <h1 className="text-lg font-bold text-gray-800">Incidents</h1>
+          <p className="text-xs text-gray-400">AI-detected security incidents</p>
         </div>
+
         <div className="ml-auto flex items-center gap-2 flex-wrap">
           {(['ALL', 'ACTIVE', 'ACKNOWLEDGED', 'RESOLVED'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1 text-[11px] font-semibold rounded-full border transition-colors ${
-                filter === f
-                  ? 'bg-[#1f6feb]/20 border-[#1f6feb] text-[#58a6ff]'
-                  : 'border-[#30363d] text-[#8b949e] hover:border-[#58a6ff]'
-              }`}>
+              className="px-3 py-1 text-[11px] font-semibold rounded-lg transition-all duration-150"
+              style={filterBtnStyle(f)}>
               {f}
             </button>
           ))}
           <button onClick={loadData}
-            className="px-3 py-1 text-[11px] font-semibold rounded-full border border-[#30363d] text-[#8b949e] hover:border-[#58a6ff] transition-colors">
-            ↻ Refresh
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-lg transition-all duration-150"
+            style={{ border: '1.5px solid rgba(234,179,8,0.4)', color: '#92400E', background: 'rgba(234,179,8,0.05)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(234,179,8,0.12)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(234,179,8,0.05)'; }}>
+            <RefreshCw size={12} /> Refresh
           </button>
         </div>
       </div>
 
       {/* Backend error */}
       {backendError && (
-        <div className="flex items-center gap-2 text-sm bg-red-900/20 border border-red-700/40 text-red-400 rounded-lg px-4 py-3">
-          <AlertTriangle size={14} />
+        <div className="flex items-center gap-2 text-sm rounded-xl px-4 py-3"
+          style={{ background: 'rgba(220,38,38,0.07)', border: '1.5px solid rgba(220,38,38,0.3)', color: '#DC2626' }}>
+          <AlertCircle size={14} />
           Backend unreachable — cannot load incidents.
         </div>
       )}
 
-      {/* Camera state notice when no cameras connected */}
+      {/* No camera notice */}
       {!loading && !backendError && connectedCameras === 0 && (
-        <div className="flex items-start gap-3 text-sm bg-[#161b22] border border-[#21262d] rounded-lg px-4 py-3">
-          <Video size={16} className="text-[#8b949e] mt-0.5 flex-shrink-0" />
+        <div className="flex items-start gap-3 text-sm rounded-xl px-4 py-3"
+          style={{ background: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.3)' }}>
+          <Video size={16} style={{ color: '#D97706', marginTop: 2, flexShrink: 0 }} />
           <div>
-            <p className="font-semibold text-[#8b949e]">No camera is currently connected.</p>
-            <p className="text-xs text-[#484f58] mt-0.5">
+            <p className="font-semibold text-gray-700">No camera is currently connected.</p>
+            <p className="text-xs text-gray-400 mt-0.5">
               Live monitoring has not started. No new incidents are being generated.
               {historicalCount > 0 && ` Showing ${historicalCount} historical incident${historicalCount !== 1 ? 's' : ''} from previous sessions.`}
             </p>
@@ -110,84 +126,92 @@ export function IncidentsPage() {
 
       {/* Content */}
       {loading ? (
-        <p className="text-xs text-[#484f58] text-center py-12">Loading…</p>
+        <div className="flex justify-center py-12">
+          <div className="w-6 h-6 rounded-full animate-spin"
+            style={{ border: '2px solid rgba(234,179,8,0.2)', borderTop: '2px solid #EAB308' }} />
+        </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <CheckCircle size={40} className="text-green-400 opacity-40" />
-          <p className="text-[#8b949e] font-semibold">
+        <div className="flex flex-col items-center justify-center py-16 gap-3 rounded-xl"
+          style={{ background: '#FFFFFF', border: '1.5px solid rgba(234,179,8,0.3)' }}>
+          <CheckCircle size={40} style={{ color: '#16A34A', opacity: 0.5 }} />
+          <p className="text-gray-600 font-semibold">
             {filter === 'ACTIVE'
-              ? connectedCameras > 0
-                ? 'No active incidents'
-                : 'No active incidents — no camera connected'
+              ? connectedCameras > 0 ? 'No active incidents' : 'No active incidents — no camera connected'
               : `No ${filter.toLowerCase()} incidents`}
           </p>
           {filter === 'ACTIVE' && connectedCameras === 0 && (
-            <p className="text-[#484f58] text-xs text-center max-w-xs">
+            <p className="text-gray-400 text-xs text-center max-w-xs">
               Connect a camera to begin monitoring. Incidents are generated only from real camera detections.
             </p>
           )}
           {filter === 'ACTIVE' && connectedCameras > 0 && (
-            <p className="text-[#484f58] text-xs">
+            <p className="text-gray-400 text-xs">
               {connectedCameras} camera{connectedCameras !== 1 ? 's' : ''} monitoring. No threats detected.
             </p>
           )}
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          {/* Section header for non-active incidents when no camera is connected */}
           {filter !== 'ACTIVE' && connectedCameras === 0 && incidents.length > 0 && (
-            <div className="text-[10px] uppercase tracking-widest text-[#484f58] px-1">
+            <div className="text-[10px] uppercase tracking-widest text-gray-400 px-1">
               Historical — from previous sessions
             </div>
           )}
           {filtered.map(inc => (
             <div key={inc.id}
-              className="bg-[#0d1117] border border-[#21262d] rounded-xl px-4 py-3 flex items-center gap-4">
+              className="bg-white rounded-xl px-4 py-3 flex items-center gap-4 transition-all duration-150"
+              style={{ border: '1.5px solid rgba(234,179,8,0.25)', boxShadow: '0 1px 4px rgba(234,179,8,0.08)' }}>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-sm text-[#e6edf3]">{inc.incident_type}</span>
+                  <span className="font-semibold text-sm text-gray-800">{inc.incident_type}</span>
                   <SeverityBadge severity={inc.severity} />
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    inc.status === 'ACTIVE' ? 'bg-red-900/20 text-red-400 border border-red-700/40' :
-                    inc.status === 'ACKNOWLEDGED' ? 'bg-yellow-900/20 text-yellow-400 border border-yellow-700/40' :
-                    'bg-green-900/20 text-green-400 border border-green-700/40'
-                  }`}>{inc.status}</span>
-                  {/* Mark demo incidents clearly */}
+                  {/* Status chip */}
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={inc.status === 'ACTIVE'
+                      ? { background: 'rgba(220,38,38,0.08)', color: '#DC2626', border: '1px solid rgba(220,38,38,0.3)' }
+                      : inc.status === 'ACKNOWLEDGED'
+                      ? { background: 'rgba(217,119,6,0.08)', color: '#D97706', border: '1px solid rgba(217,119,6,0.3)' }
+                      : { background: 'rgba(22,163,74,0.08)', color: '#16A34A', border: '1px solid rgba(22,163,74,0.3)' }}>
+                    {inc.status}
+                  </span>
+                  {/* Demo label */}
                   {inc.description?.startsWith('[DEMO]') && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#21262d] text-[#484f58] border border-[#30363d]">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
+                      style={{ background: 'rgba(234,179,8,0.10)', color: '#92400E', border: '1px solid rgba(234,179,8,0.3)' }}>
                       DEMO DATA
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-3 mt-1 text-[11px] text-[#484f58]">
+                <div className="flex items-center gap-3 mt-1 text-[11px] text-gray-400 flex-wrap">
                   <span>{inc.location}</span>
                   <span>·</span>
                   <span>{Math.round(inc.confidence * 100)}% confidence</span>
                   {inc.camera_id != null && (
-                    <>
-                      <span>·</span>
-                      <span className="font-mono">CAM-{String(inc.camera_id).padStart(3, '0')}</span>
-                    </>
+                    <><span>·</span><span className="font-mono">CAM-{String(inc.camera_id).padStart(3, '0')}</span></>
                   )}
                   <span>·</span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={10} /> {formatTime(inc.detected_at)}
-                  </span>
+                  <span className="flex items-center gap-1"><Clock size={10} /> {formatTime(inc.detected_at)}</span>
                 </div>
                 {inc.description && !inc.description.startsWith('[DEMO]') && (
-                  <p className="text-[11px] text-[#8b949e] mt-1">{inc.description}</p>
+                  <p className="text-[11px] text-gray-500 mt-1">{inc.description}</p>
                 )}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {inc.status === 'ACTIVE' && (
                   <button onClick={() => handleAck(inc.id)} disabled={busy === inc.id}
-                    className="px-3 py-1.5 text-[11px] font-semibold border border-yellow-700/50 text-yellow-400 hover:bg-yellow-900/20 rounded-lg disabled:opacity-40 transition-colors">
+                    className="px-3 py-1.5 text-[11px] font-semibold rounded-lg disabled:opacity-40 transition-all duration-150"
+                    style={{ border: '1.5px solid rgba(217,119,6,0.4)', color: '#D97706', background: 'rgba(217,119,6,0.05)' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(217,119,6,0.12)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(217,119,6,0.05)'; }}>
                     Acknowledge
                   </button>
                 )}
                 {(inc.status === 'ACTIVE' || inc.status === 'ACKNOWLEDGED') && (
                   <button onClick={() => handleResolve(inc.id)} disabled={busy === inc.id}
-                    className="px-3 py-1.5 text-[11px] font-semibold border border-green-700/50 text-green-400 hover:bg-green-900/20 rounded-lg disabled:opacity-40 transition-colors">
+                    className="px-3 py-1.5 text-[11px] font-semibold rounded-lg disabled:opacity-40 transition-all duration-150"
+                    style={{ border: '1.5px solid rgba(22,163,74,0.4)', color: '#16A34A', background: 'rgba(22,163,74,0.05)' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(22,163,74,0.12)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(22,163,74,0.05)'; }}>
                     Resolve
                   </button>
                 )}
@@ -197,9 +221,9 @@ export function IncidentsPage() {
         </div>
       )}
 
-      {/* Live/Historical summary */}
+      {/* Summary */}
       {!loading && !backendError && incidents.length > 0 && (
-        <div className="text-[10px] text-[#484f58] text-center">
+        <div className="text-[10px] text-gray-400 text-center">
           {activeCount > 0 && `${activeCount} active · `}
           {historicalCount > 0 && `${historicalCount} historical · `}
           {connectedCameras} camera{connectedCameras !== 1 ? 's' : ''} connected

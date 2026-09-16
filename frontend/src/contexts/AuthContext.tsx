@@ -6,7 +6,7 @@
  */
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import type { Session, User, AuthError } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseConfigured } from '../lib/supabase';
 
 // ── Profile from public.users table ──────────────────────────
 export interface UserProfile {
@@ -41,9 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Check if Supabase is actually configured (not placeholder)
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-  const supabaseConfigured = !!(supabaseUrl && !supabaseUrl.includes('placeholder') && !supabaseUrl.includes('YOUR_PROJECT_ID'));
+  // Check if Supabase is actually configured (not placeholder, not empty)
+  // Uses the same logic as the client module so there's a single source of truth
 
   // Fetch user profile from public.users
   const fetchProfile = useCallback(async (userId: string) => {
