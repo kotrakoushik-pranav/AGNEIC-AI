@@ -1,27 +1,58 @@
-﻿# Dependencies
+﻿# ── Dependencies ──────────────────────────────────────────────
 node_modules/
 
-# Frontend builds
+# ── Frontend builds ───────────────────────────────────────────
 dist/
 build/
 
-# Environment / secrets
+# ── Environment / secrets (NEVER commit these) ────────────────
 .env
 .env.*
 !.env.example
 
-# Python
+# ── Python ────────────────────────────────────────────────────
 __pycache__/
 *.pyc
+*.pyo
 .venv/
 venv/
+env/
+.pytest_cache/
 
-# Logs
+# ── Databases ────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── SSL Certificates (generated locally) ─────────────────────
+backend/certs/
+*.crt
+*.key
+*.pem
+
+# ── AI Models (large binary files, download separately) ───────
+backend/models/
+*.onnx
+
+# ── Logs ─────────────────────────────────────────────────────
 *.log
+logs/
 
-# OS files
+# ── OS files ─────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Project backup
+# ── Backup / temp ─────────────────────────────────────────────
 backend.zip
+*.zip
+*.bak
+*.tmp
+
+# ── IDE ───────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+
+# ── Stray artifacts ───────────────────────────────────────────
+.db
+qlite

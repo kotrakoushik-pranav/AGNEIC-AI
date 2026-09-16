@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
-import { Bell, Camera, AlertOctagon } from 'lucide-react';
+import { Bell, Camera, AlertOctagon, LogOut } from 'lucide-react';
 import { Incident } from '../../types';
 import { SeverityBadge } from '../shared/SeverityBadge';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Props {
   activeCameras: number;
@@ -40,6 +41,13 @@ export function TopHeader({
   const isControlled = bellOpenProp !== undefined;
   const dropdownOpen = isControlled ? bellOpenProp : internalOpen;
   const containerRef = useRef<HTMLDivElement>(null);
+  const { profile, signOut, supabaseConfigured, session } = useAuth();
+
+  const userInitials = profile?.display_name
+    ? profile.display_name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    : (session?.user?.email?.[0]?.toUpperCase() ?? 'OP');
+  const userName = profile?.display_name ?? session?.user?.email?.split('@')[0] ?? 'Operator';
+  const userRole = profile?.role ?? 'operator';
 
   const alertIncidents = incidents.filter(isUnacknowledgedAlert);
   const alertCount = alertIncidents.length;
@@ -238,13 +246,27 @@ export function TopHeader({
               boxShadow: '0 0 0 2px rgba(234,179,8,0.3)',
             }}
           >
-            OP
+            {userInitials}
           </div>
           <div className="flex flex-col leading-none">
-            <span className="text-gray-800 text-[11px] font-semibold">Operator</span>
-            <span className="text-gray-400 text-[10px]">Admin</span>
+            <span className="text-gray-800 text-[11px] font-semibold">{userName}</span>
+            <span className="text-gray-400 text-[10px] capitalize">{userRole}</span>
           </div>
         </div>
+
+        {/* Logout button (only when auth is active) */}
+        {supabaseConfigured && (
+          <button
+            onClick={() => signOut()}
+            title="Sign out"
+            className="p-1.5 rounded-lg transition-all duration-150 text-gray-400 hover:text-red-500"
+            style={{ marginLeft: '4px' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(220,38,38,0.08)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+          >
+            <LogOut size={16} />
+          </button>
+        )}
       </div>
     </header>
   );
