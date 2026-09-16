@@ -1,0 +1,170 @@
+/* ── Google Fonts — must be first ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: #F9FAFB;
+    color: #1F2937;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F3F4F6;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #EAB308;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #D97706;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Utility animations
+───────────────────────────────────────────── */
+@layer utilities {
+  .live-pulse {
+    animation: livePulse 1.5s ease-in-out infinite;
+  }
+  .incident-pulse {
+    animation: incidentPulse 2s ease-in-out infinite;
+  }
+  .system-pulse {
+    animation: systemPulse 2.5s ease-in-out infinite;
+  }
+  .gold-glow-pulse {
+    animation: goldGlowPulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes incidentPulse {
+  0%   { transform: scale(1);   opacity: 1; }
+  50%  { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(1);   opacity: 0; }
+}
+
+@keyframes systemPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
+  50%       { opacity: 0.8; box-shadow: 0 0 0 5px rgba(22, 163, 74, 0); }
+}
+
+@keyframes goldGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 6px 2px rgba(234, 179, 8, 0.3),
+                0 0 0 0 rgba(250, 204, 21, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 18px 6px rgba(234, 179, 8, 0.5),
+                0 0 32px 10px rgba(250, 204, 21, 0.15);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Violin-string / elastic nav animation
+   Triggered by adding .nav-pluck class via JS
+───────────────────────────────────────────── */
+@keyframes stringPluck {
+  0%   { transform: translateX(0)    scaleX(1);     }
+  15%  { transform: translateX(5px)  scaleX(0.96);  }
+  35%  { transform: translateX(-4px) scaleX(1.03);  }
+  55%  { transform: translateX(2px)  scaleX(0.98);  }
+  75%  { transform: translateX(-1px) scaleX(1.01);  }
+  100% { transform: translateX(0)    scaleX(1);     }
+}
+
+.nav-pluck {
+  animation: stringPluck 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Gold shimmer sweep on active nav items */
+@keyframes goldSweep {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.nav-active-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(234,179,8,0.08) 0%,
+    rgba(250,204,21,0.22) 40%,
+    rgba(234,179,8,0.08) 100%
+  );
+  background-size: 200% 100%;
+  animation: goldSweep 1.8s ease-in-out infinite;
+}
+
+/* Gemini-inspired ambient glow ring */
+@keyframes geminiGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 rgba(250,204,21,0),
+      inset 0 0 0 0 rgba(250,204,21,0);
+  }
+  50% {
+    box-shadow:
+      0 0 20px 4px rgba(250,204,21,0.18),
+      inset 0 0 8px 0 rgba(250,204,21,0.08);
+  }
+}
+
+.gemini-glow {
+  animation: geminiGlow 2.4s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────
+   Card elevation
+───────────────────────────────────────────── */
+.gold-card {
+  background: #FFFFFF;
+  border: 1.5px solid #EAB308;
+  box-shadow: 0 2px 8px rgba(234,179,8,0.10), 0 1px 2px rgba(0,0,0,0.05);
+  transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.gold-card:hover {
+  box-shadow: 0 6px 24px rgba(234,179,8,0.22), 0 2px 6px rgba(0,0,0,0.07);
+  border-color: #D97706;
+  transform: translateY(-1px);
+}
+
+/* Top-accent card variant */
+.gold-card-top {
+  background: #FFFFFF;
+  border: 1px solid #F3F4F6;
+  border-top: 3px solid #EAB308;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.gold-card-top:hover {
+  box-shadow: 0 8px 28px rgba(234,179,8,0.18);
+  transform: translateY(-1px);
+}
